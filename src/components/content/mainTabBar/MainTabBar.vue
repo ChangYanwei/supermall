@@ -1,7 +1,7 @@
 <template>
   <tab-bar>
     <!--  在dom中使用路径别名,前边需要加上波浪号~  -->
-    <tab-bar-item path="/home" activeColor="blue">
+    <tab-bar-item path="/home">
       <img src="~assets/images/tabbar/home.png" slot="item-icon">
       <img src="~assets/images/tabbar/home-active.png" slot="item-icon-active">
       <div slot="item-text">首页</div>
@@ -12,7 +12,7 @@
       <div slot="item-text">分类</div>
     </tab-bar-item>
     <tab-bar-item path="/cart">
-      <img src="~/assets/images/tabbar/cart.png" slot="item-icon">
+      <img src="~assets/images/tabbar/cart.png" slot="item-icon">
       <img src="~assets/images/tabbar/cart-active.png" slot="item-icon-active">
       <div slot="item-text">购物车</div>
     </tab-bar-item>

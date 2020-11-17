@@ -80,9 +80,53 @@
 
 1. 将之前写的tabbar组件拿过来用
 2. 安装vue-router   **npm install vue-router --save**
-3. 
 
 
 
+### 五、开发首页
 
+1. 封装导航栏组件
+
+2. 封装网络模块，先拿到数据
+
+   - 安装axios **npm install axios --save**
+   - 在src文件夹中的network文件夹创建home.js文件，对首页中的所有网络请求进行管理
+
+3. 轮播图
+
+   - 封装成组件 **HomeSwiper**
+
+4. 推荐信息
+
+   - 封装成组件 **HomeRecommendView**
+
+5. 本周流行
+
+   - 封装成组件 **HomeFeature**
+
+   - ```js
+     ul>{列表$}*50
+     //可以动态生成50个列表
+     ```
+
+6. 封装**tabControl**组件
+
+7. 保存商品的数据结构
+
+   - 流行
+   - 新款
+   - 精选
+
+   ```javascript
+   goods:{
+   	"pop":{page:1,list:[]},
+       "new":{},
+       "sell":{}
+   }
+   ```
+
+8. 商品列表
+
+   - **GoodList**
+   - **GoodListItem**
 
