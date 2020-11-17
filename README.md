@@ -1,29 +1,21 @@
 # supermall
 
-## Project setup
-```
-npm install
-```
+## 目标
+- **使用vue开发一个网上商城**
+- 学习使用vue-cli
+- 学习组件化的开发模式
+- 学习代码优化的一些技巧
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## 技术选型
+- vue-cli 3.11.0
+- webpack
+- ES6
+- 使用 vue-router 开发单页面
+- 使用 axios，进行封装、后端数据交互
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## 开发思想
+- 采用**模块化、组件化、工程化**的模式进行开发
 
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 项目进度
+- 2020.11.15 使用vue-cli3初始化项目，划分目录结构，进行项目配置，如路径别名等
+- 2020.11.17 基本完成首页开发
