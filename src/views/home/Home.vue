@@ -6,19 +6,36 @@
       <div slot="center">购物车</div>
     </nav-bar>
 
-    <!--轮播图-->
-    <home-swiper :banners="banner"/>
+    <tab-control
+            @tab-click="tabClick"
+            class="tab-control"
+            :titles="['流行','新款','精选']"
+            ref="tabControl1"
+            v-show="isTabFixed"/>
 
-    <!--推荐信息-->
-    <home-recommend-view :recommends="recommend"/>
+    <!--此处需要加上：，加上：传过去的是数字3，只要不加：，传过去的是字符串3-->
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+            :pull-up-load="true"
+            @scroll="contentScroll"
+            @get-more-goods="getMoreGoods">
+      <!--轮播图-->
+      <home-swiper :banners="banner" @swiper-image-load="swiperImageLoad"/>
+      <!--推荐信息-->
+      <home-recommend-view :recommends="recommend"/>
+      <!--本周流行-->
+      <home-feature/>
+      <tab-control
+              @tab-click="tabClick"
+              :titles="['流行','新款','精选']"
+              ref="tabControl2"/>
+      <!--商品列表-->
+      <good-list :goods="showGoods"></good-list>
+    </scroll>
 
-    <!--本周流行-->
-    <home-feature/>
-
-    <tab-control @tab-click="tabClick" class="tab-control" :titles="['流行','新款','精选']"/>
-
-    <!--商品列表-->
-    <good-list :goods="showGoods"></good-list>
+    <!--在我们需要监听一个组件的原生事件时,必须给对应的事件加上.native修饰符,才能进行监听-->
+    <back-top @click.native="backTop" v-show="isShowBackTop"></back-top>
 
   </div>
 </template>
@@ -27,24 +44,28 @@
   //公共组件
   import NavBar from "components/common/navbar/NavBar";
   import TabControl from "components/content/tabControl/TabControl";
+  import Scroll from "components/common/scroll/Scroll";
+  import BackTop from "components/content/backTop/BackTop";
 
   //页面内使用的组件
   import HomeSwiper from "./childComponents/HomeSwiper";
   import HomeRecommendView from "./childComponents/HomeRecommendView";
   import HomeFeature from "./childComponents/HomeFeature";
   import GoodList from "components/content/goods/GoodList";
-  import GoodListItem from "components/content/goods/GoodListItem";
 
   import {
     getHomeMultiData,
     getHomeGoods
   } from "network/home";
+  import {debounce} from "common/utils/utils";
 
   export default {
     name: "home",
     components: {
       NavBar,
       TabControl,
+      Scroll,
+      BackTop,
 
       HomeSwiper,
       HomeRecommendView,
@@ -69,11 +90,15 @@
             list: []
           }
         },
-        currentType: "pop"
+        currentType: "pop",
+        isShowBackTop: false,
+        tabOffsetTop: 0,
+        isTabFixed: false,
+        saveY: 0
       }
     },
-    computed:{
-      showGoods(){
+    computed: {
+      showGoods() {
         return this.goods[this.currentType].list;
       }
     },
@@ -87,9 +112,26 @@
       this.getGoods("pop");
       this.getGoods("new");
       this.getGoods("sell");
+      console.log("created");
+    },
+    activated() {
+      this.$refs.scroll.refresh();
+      this.$refs.scroll.scrollTo(0, this.saveY, 0);
+    },
+    deactivated() {
+      this.saveY = this.$refs.scroll.getScrollY();
+      console.log(this.saveY);
+    },
+    mounted() {
+      //1.监听GoodListItem中图片加载完成
+      const refresh = debounce(this.$refs.scroll.refresh, 500);
+      this.$bus.$on("imageLoad", () => {
+        //刷新，让better-scroll重新计算可滚动的高度
+        refresh();
+      });
     },
     methods: {
-      //网络请求相关
+      //1.网络请求相关
       getMultiData() {
         getHomeMultiData().then(res => {
           // console.log("首页数据:", res);
@@ -100,13 +142,15 @@
       getGoods(type) {
         let page = this.goods[type].page + 1;
         getHomeGoods(type, page).then(res => {
-          console.log("商品数据", res);
+          console.log(type, "第", page, "页商品数据", res);
           this.goods[type].list.push(...res.data.list);
           this.goods[type].page += 1;
+
+          this.$refs.scroll.finishPullUp();
         })
       },
 
-      //事件监听相关
+      //2.事件监听相关
       tabClick(index) {
         switch (index) {
           case 0:
@@ -119,7 +163,33 @@
             this.currentType = "sell"
             break;
         }
+        this.$refs.tabControl1.currentIndex = index;
+        this.$refs.tabControl2.currentIndex = index;
+      },
+
+      //点击后返回页面顶部
+      backTop() {
+        //scrollTo(x,y,毫秒数),此时调用的是Scroll.vue组件中的额方法
+        this.$refs.scroll.scrollTo(0, 0, 500);
+      },
+
+      //监听页面滚动
+      contentScroll(position) {
+        //1.判断backTop是否显示
+        this.isShowBackTop = (-position.y) > 800;
+        //2.决定tabControl是否吸顶
+        this.isTabFixed = (-position.y) > this.tabOffsetTop;
+      },
+
+      getMoreGoods() {
+        this.getGoods(this.currentType);
+      },
+
+      swiperImageLoad() {
+        //获取tabControl的offsetTop
+        this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
       }
+
     }
   }
 </script>
@@ -127,23 +197,45 @@
 <style scoped>
 
   #home {
-    padding-top: 44px;
+    /*vh是视口高度*/
+    height: 100vh;
+    position: relative;
   }
 
   .home-nav {
-    /*疑问：为什么base.css中的内容在这里也可以用？*/
+    /*
+    疑问：为什么base.css中的内容在这里也可以用？
+    答：因为base.css文件在App.vue中被引用，而App.vue的style没有scoped属性
+    */
     background-color: var(--color-tint);
     color: white;
-    position: fixed;
-    top: 0;
+    /*在使用浏览器原生滚动时，为了让导航不跟随一起滚动*/
+    /*position: fixed;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*!*需要加上right:0;不加的话，组件的宽度会出现异常*!*/
+    /*right: 0;*/
+    /*z-index: 100;*/
+  }
+
+  .content {
+    overflow: hidden;
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
     left: 0;
-    /*需要加上right:0;不加的话，组件的宽度会出现异常*/
     right: 0;
-    z-index: 100;
   }
 
   .tab-control {
-    position: sticky;
+    position: relative;
+    z-index: 100;
+  }
+
+  .fixed {
+    position: fixed;
+    left: 0;
+    right: 0;
     top: 44px;
   }
 </style>

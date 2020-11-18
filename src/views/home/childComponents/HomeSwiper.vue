@@ -4,7 +4,7 @@
     <swiper>
       <swiper-item v-for="item in banners">
         <a href="item.link">
-          <img :src="item.image" :alt="item.title">
+          <img :src="item.image" :alt="item.title" @load="imageLoad">
         </a>
       </swiper-item>
     </swiper>
@@ -17,17 +17,31 @@
 
   export default {
     name: "HomeSwiper",
-    props:{
-      banners:{
-        type:Array,
-        default(){
+    props: {
+      banners: {
+        type: Array,
+        default() {
           return []
         }
+      }
+    },
+    data(){
+      return {
+        isLoad:false
       }
     },
     components: {
       Swiper,
       SwiperItem
+    },
+    methods: {
+      imageLoad() {
+        //只需要发出一次事件就可以知道轮播图的高度了
+        if (!this.isLoad) {
+          this.$emit("swiper-image-load");
+          this.isLoad = true;
+        }
+      }
     }
   }
 </script>
