@@ -45,7 +45,7 @@
   import NavBar from "components/common/navbar/NavBar";
   import TabControl from "components/content/tabControl/TabControl";
   import Scroll from "components/common/scroll/Scroll";
-  import BackTop from "components/content/backTop/BackTop";
+  import {backTopMixin} from "common/utils/mixin";
 
   //页面内使用的组件
   import HomeSwiper from "./childComponents/HomeSwiper";
@@ -65,13 +65,13 @@
       NavBar,
       TabControl,
       Scroll,
-      BackTop,
 
       HomeSwiper,
       HomeRecommendView,
       HomeFeature,
       GoodList
     },
+    mixins:[backTopMixin],//混入
     data() {
       return {
         banner: [],
@@ -91,10 +91,10 @@
           }
         },
         currentType: "pop",
-        isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed: false,
-        saveY: 0
+        saveY: 0,
+        imgLoad:null
       }
     },
     computed: {
@@ -112,29 +112,34 @@
       this.getGoods("pop");
       this.getGoods("new");
       this.getGoods("sell");
-      console.log("created");
     },
     activated() {
       this.$refs.scroll.refresh();
       this.$refs.scroll.scrollTo(0, this.saveY, 0);
     },
     deactivated() {
+      //1.保存离开首页时的Y坐标
       this.saveY = this.$refs.scroll.getScrollY();
-      console.log(this.saveY);
+
+      //2.离开首页时，取消对全局事件的监听
+      this.$bus.$off("imageLoad",this.imgLoad)
     },
     mounted() {
       //1.监听GoodListItem中图片加载完成
       const refresh = debounce(this.$refs.scroll.refresh, 500);
-      this.$bus.$on("imageLoad", () => {
+
+      //对监听的事件进行保存
+      this.imgLoad = () => {
         //刷新，让better-scroll重新计算可滚动的高度
         refresh();
-      });
+      };
+      this.$bus.$on("imageLoad", this.imgLoad);
     },
     methods: {
       //1.网络请求相关
       getMultiData() {
         getHomeMultiData().then(res => {
-          // console.log("首页数据:", res);
+          console.log("首页数据:", res);
           this.banner = res.data.banner.list;
           this.recommend = res.data.recommend.list;
         })
@@ -167,16 +172,11 @@
         this.$refs.tabControl2.currentIndex = index;
       },
 
-      //点击后返回页面顶部
-      backTop() {
-        //scrollTo(x,y,毫秒数),此时调用的是Scroll.vue组件中的额方法
-        this.$refs.scroll.scrollTo(0, 0, 500);
-      },
-
       //监听页面滚动
       contentScroll(position) {
         //1.判断backTop是否显示
-        this.isShowBackTop = (-position.y) > 800;
+        this.listenBackTop(position);
+
         //2.决定tabControl是否吸顶
         this.isTabFixed = (-position.y) > this.tabOffsetTop;
       },

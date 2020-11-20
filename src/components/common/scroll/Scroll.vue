@@ -34,7 +34,7 @@
         pullUpLoad: this.pullUpLoad//上拉加载更多的功能
       });
 
-      //监听滚动的位置
+      //监听滚动的位置，只要页面滚动，就通过this.$emit()发出事件
       this.scroll.on("scroll", position => {
         // console.log(position);
         this.$emit("scroll", position)

@@ -1,6 +1,6 @@
 <template>
   <div class="goods">
-    <good-list-item v-for="item in goods" :goodItemData="item" />
+    <good-list-item v-for="item in goods" :goodItemData="item"/>
   </div>
 </template>
 
@@ -14,7 +14,7 @@
       goods: {
         type: Array,
         default() {
-
+          return []
         }
       }
     },

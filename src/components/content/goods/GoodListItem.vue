@@ -1,6 +1,6 @@
 <template>
   <div class="goods-item" @click="goodClick">
-    <img :src="goodItemData.show.img" @load="imageLoad">
+    <img :src="showImage" @load="imageLoad">
     <div class="goods-info">
       <p>{{goodItemData.title}}</p>
       <span class="price">{{goodItemData.price}}</span>
@@ -12,21 +12,27 @@
 <script>
   export default {
     name: "GoodListItem",
-    props:{
-      goodItemData:{
-        type:Object,
-        default(){
+    props: {
+      goodItemData: {
+        type: Object,
+        default() {
           return {}
         }
       }
     },
-    methods:{
+    computed: {
+      showImage() {
+        //该组件在Home页面和Detail页面都有使用，但是图片的路径不同，故做此处理
+        return this.goodItemData.image || this.goodItemData.show.img;
+      }
+    },
+    methods: {
       //监听图片加载
-      imageLoad(){
+      imageLoad() {
         //使用事件总线
         this.$bus.$emit("imageLoad")
       },
-      goodClick(){
+      goodClick() {
         this.$router.push("/detail/" + this.goodItemData.iid);
       }
     }
