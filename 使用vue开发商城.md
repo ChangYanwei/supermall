@@ -386,5 +386,28 @@ goods:{
         }
     ```
 
-    
+- 图片懒加载
 
+  - **npm install vue-lazyload**
+
+  - 用法https://segmentfault.com/a/1190000011672452
+
+    - main.js 在入口文件
+
+    - ```js
+      import Vue from 'vue'
+      import App from './App.vue'
+      import VueLazyload from 'vue-lazyload'  //引入这个懒加载插件
+      
+      Vue.use(VueLazyload)
+      
+      // 或者添加VueLazyload 选项
+      Vue.use(VueLazyload, {
+        preLoad: 1.3,
+        error: 'dist/error.png',
+        loading: 'dist/loading.gif',
+        attempt: 1
+      })
+      ```
+
+    - 

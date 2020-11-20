@@ -14,6 +14,8 @@
 
     <!--在我们需要监听一个组件的原生事件时,必须给对应的事件加上.native修饰符,才能进行监听-->
     <back-top @click.native="backTop" v-show="isShowBackTop"></back-top>
+
+    <toast :message="message" :show="show" />
   </div>
 </template>
 
@@ -33,6 +35,7 @@
   import DetailParamInfo from "./childComponents/DetailParamInfo"
   import DetailCommentInfo from "./childComponents/DetailCommentInfo";
   import DetailBottomBar from "./childComponents/DetailBottomBar";
+  import Toast from "components/common/Toast/Toast";
 
   import {getDetailData, Goods, Shop, GoodsParam, getDetailRecommend} from "network/detail"
   import {mapActions} from "vuex";
@@ -50,7 +53,9 @@
         commentInfo: {},
         recommends: [],
         topY: [],
-        currentIndex:0
+        currentIndex:0,
+        message:"",
+        show:false
       }
     },
     mixins:[backTopMixin],
@@ -65,7 +70,8 @@
       DetailGoodsInfo,
       DetailParamInfo,
       DetailCommentInfo,
-      DetailBottomBar
+      DetailBottomBar,
+      Toast
     },
     created() {
       //1.保存商品的id
@@ -128,6 +134,7 @@
       getRecommend() {
         getDetailRecommend().then(res => {
           this.recommends = res.data.list;
+          console.log("推荐数据",this.recommends);
         })
       },
 
@@ -181,7 +188,15 @@
         //2.将商品添加到购物车中
         // this.$store.commit("addCart",product);
         this.$store.dispatch("addCart",product).then(res => {
-          console.log(res);
+          this.$toast.show(res,1500);
+
+          // this.show = true;
+          // this.message = res;
+          //
+          // setTimeout(() => {
+          //   this.show = false;
+          // },1500)
+          // console.log(res);
         })
         // this.addCart(product).then(res => {
         //   console.log(res);
